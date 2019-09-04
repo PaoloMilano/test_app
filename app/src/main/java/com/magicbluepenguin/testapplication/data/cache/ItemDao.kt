@@ -1,5 +1,6 @@
 package com.magicbluepenguin.testapplication.data.cache
 
+import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -10,7 +11,7 @@ import com.magicbluepenguin.testapplication.data.models.Item
 interface ItemDao {
 
     @Query("SELECT * FROM item")
-    fun getAllItems(): List<Item>
+    fun getAllItems(): DataSource.Factory<Int, Item>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(users: List<Item>)

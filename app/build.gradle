@@ -55,7 +55,10 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
-    kapt 'android.arch.persistence.room:compiler:1.1.1'
+    kapt 'android.arch.persistence.room:compiler:2.1.0'
+
+    implementation "android.arch.paging:runtime:2.1.0"
+    implementation "androidx.recyclerview:recyclerview:1.0.0"
 
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.0-beta-3'
