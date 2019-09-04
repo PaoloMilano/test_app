@@ -2,6 +2,7 @@ package com.magicbluepenguin.testapplication.data.cache
 
 import androidx.paging.DataSource
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,4 +16,7 @@ interface ItemDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(users: List<Item>)
+
+    @Delete
+    fun deleteAll(users: List<Item>)
 }
