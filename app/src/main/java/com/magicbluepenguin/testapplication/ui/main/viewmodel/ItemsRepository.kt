@@ -35,7 +35,7 @@ class ItemsRepository(
         // Only clear out the old items if the request succeeds. This way we can ensure we can still
         // show the user some data even when the server can't be reached
         if (!freshItems.isEmpty()) {
-            itemDao.deleteAll()
+            itemDao.deleteAll(itemDao.getAllItems().map { it.img })
             itemDao.insertAll(freshItems)
         }
 

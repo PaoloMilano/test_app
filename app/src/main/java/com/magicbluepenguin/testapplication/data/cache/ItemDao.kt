@@ -13,6 +13,9 @@ interface ItemDao {
     @Query("SELECT * FROM item")
     fun getAllItemsPaged(): DataSource.Factory<Int, Item>
 
+    @Query("SELECT * FROM item")
+    fun getAllItems(): List<Item>
+
     @Query("SELECT * FROM item LIMIT :limit OFFSET :offset")
     fun getItems(offset: Int, limit: Int): List<Item>
 
@@ -20,8 +23,11 @@ interface ItemDao {
     fun isEmpty(): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insertAll(users: List<Item>)
+    fun insertAll(items: List<Item>)
 
     @Query("DELETE FROM item")
     fun deleteAll()
+
+    @Query("DELETE FROM item WHERE img NOT IN (:images)")
+    fun deleteAll(images: List<String>)
 }
