@@ -2,7 +2,6 @@ package com.magicbluepenguin.testapplication.data.cache
 
 import androidx.paging.DataSource
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -12,11 +11,17 @@ import com.magicbluepenguin.testapplication.data.models.Item
 interface ItemDao {
 
     @Query("SELECT * FROM item")
-    fun getAllItems(): DataSource.Factory<Int, Item>
+    fun getAllItemsPaged(): DataSource.Factory<Int, Item>
+
+    @Query("SELECT * FROM item LIMIT :limit OFFSET :offset")
+    fun getItems(offset: Int, limit: Int): List<Item>
+
+    @Query("SELECT(CASE WHEN NOT EXISTS(SELECT NULL FROM item) THEN 1 ELSE 0 END) AS isEmpty")
+    fun isEmpty(): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(users: List<Item>)
 
-    @Delete
-    fun deleteAll(users: List<Item>)
+    @Query("DELETE FROM item")
+    fun deleteAll()
 }

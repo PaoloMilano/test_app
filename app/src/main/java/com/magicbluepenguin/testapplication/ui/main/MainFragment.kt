@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import com.magicbluepenguin.testapp.bindings.BindableViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import com.magicbluepenguin.testapp.bindings.BoundPagedRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.R
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.databinding.ListItemBinding
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
+import com.magicbluepenguin.testapplication.databinding.RefreshListItemBinding
 import com.magicbluepenguin.testapplication.ui.main.viewmodel.ItemsViewModel
 
 class MainFragment : Fragment() {
@@ -44,16 +45,44 @@ class MainFragment : Fragment() {
                     R.layout.main_fragment
                 )
                 dataBinding.lifecycleOwner = viewLifecycleOwner
-                dataBinding.itemsListView.boundAdapter = CustomerRecyclerViewAdapter()
+                dataBinding.itemsListView.boundAdapter =
+                    CustomerRecyclerViewAdapter()
                 dataBinding.itemsViewModel = itemsViewModel
             }
         }
     }
 
-    class CustomerRecyclerViewAdapter :
-        BoundPagedRecyclerViewAdapter<Item, ItemViewHolder>() {
+    class CustomerRecyclerViewAdapter() :
+        BoundPagedRecyclerViewAdapter<Item, RecyclerView.ViewHolder>() {
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+        private val VIEW_TYPE_ITEM = 0
+        private val VIEW_TYPE_PROGRESS_BAR = 1
+
+        override fun getItemCount(): Int {
+            return super.getItemCount() + 1
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            if (position == itemCount - 1) {
+                return VIEW_TYPE_PROGRESS_BAR
+            }
+            return VIEW_TYPE_ITEM
+        }
+
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int
+        ): RecyclerView.ViewHolder {
+            if (viewType == VIEW_TYPE_PROGRESS_BAR) {
+                return ProgressBarItem(
+                    DataBindingUtil.inflate(
+                        LayoutInflater.from(parent.context),
+                        R.layout.refresh_list_item,
+                        parent,
+                        false
+                    )
+                )
+            }
             return ItemViewHolder(
                 DataBindingUtil.inflate(
                     LayoutInflater.from(parent.context),
@@ -63,13 +92,28 @@ class MainFragment : Fragment() {
                 )
             )
         }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            when (holder) {
+                is ItemViewHolder -> getItem(position)?.let {
+                    holder.bind(it)
+                }
+                is ProgressBarItem -> holder.bind(isFetchingMore)
+            }
+        }
     }
 
-    class ItemViewHolder(binder: ListItemBinding) :
-        BindableViewHolder<Item, ListItemBinding>(binder) {
+    open class ItemViewHolder(val binding: ListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Item) {
+            binding.item = item
+        }
+    }
 
-        override fun bind(viewBinding: ListItemBinding, item: Item) {
-            viewBinding.item = item
+    class ProgressBarItem(val binding: RefreshListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(isFetchingMore: Boolean) {
+            binding.isFetchingMoreItems = isFetchingMore
         }
     }
 }

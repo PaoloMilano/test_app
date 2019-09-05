@@ -16,17 +16,26 @@
         android:layout_height="match_parent"
         tools:context=".ui.main.MainFragment">
 
-        <com.magicbluepenguin.testapp.bindings.BoundRecyclerView
-            android:id="@+id/items_list_view"
-            android:name="com.magicbluepenguin.raboapp.ItemListFragment"
-            items="@{ itemsViewModel.itemsLiveData }"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/pull_to_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:scrollbars="vertical"
-            app:layoutManager="LinearLayoutManager"
-            tools:context=".customerlistactivity.CustomerListActivity"
-            tools:listitem="@layout/list_item" />
+            app:onRefreshListener="@{() -> itemsViewModel.refresh()}"
+            app:refreshing="@{ itemsViewModel.isRefreshing }">
+
+            <com.magicbluepenguin.testapp.bindings.BoundRecyclerView
+                android:id="@+id/items_list_view"
+                android:name="com.magicbluepenguin.testapplication.ui.main.MainFragment"
+                isFetchingMore="@{ itemsViewModel.isFetchingMoreItems }"
+                items="@{ itemsViewModel.itemsLiveData }"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:scrollbars="vertical"
+                app:layoutManager="LinearLayoutManager"
+                tools:context=".customerlistactivity.CustomerListActivity"
+                tools:listitem="@layout/list_item" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

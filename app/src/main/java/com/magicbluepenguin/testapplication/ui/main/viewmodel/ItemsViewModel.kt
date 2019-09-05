@@ -11,9 +11,9 @@ import androidx.room.Room
 import com.magicbluepenguin.testapplication.data.cache.AppDatabase
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.data.network.RetrofitServiceProvider
-import com.magicbluepenguin.testapplication.util.HasMoreItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
 import com.magicbluepenguin.testapplication.util.NetworkError
-import com.magicbluepenguin.testapplication.util.NetworkOperationInProgress
+import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,8 +21,8 @@ import kotlinx.coroutines.withContext
 class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
 
     val itemsLiveData: LiveData<PagedList<Item>>
-    val isLoading = MutableLiveData<Boolean>()
-    val hasMoreItems = MutableLiveData<Boolean>()
+    val isFetchingMoreItems = MutableLiveData<Boolean>()
+    val isRefreshing = MutableLiveData<Boolean>()
 
     companion object {
 
@@ -39,7 +39,7 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
                                 Room.databaseBuilder(
                                     activityContext,
                                     AppDatabase::class.java, "items_app_database"
-                                ).build()
+                                ).build().itemDao()
                             )
                         return ItemsViewModel(itemsRepository) as T
                     }
@@ -48,24 +48,33 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
     }
 
     init {
+        // Begin by clearing out the cache
+        refresh()
+
         itemsLiveData = itemsRepository.connect()
+
         itemsRepository.setOnRepositoryStateListener { repositoryState ->
             viewModelScope.launch {
+
                 // Use return value to force when statement to be exhaustive
                 val ignore = when (repositoryState) {
-                    is NetworkOperationInProgress -> isLoading.value = repositoryState.value
-                    is HasMoreItems -> hasMoreItems.value = repositoryState.value
+                    is IsFetchingMoreItems -> isFetchingMoreItems.value = repositoryState.value
+                    is RefreshInProgress -> isRefreshing.value = repositoryState.value
                     NetworkError -> TODO()
                 }
             }
         }
     }
 
-    fun fetchNextItems(batchSize: Int = 10) {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                itemsRepository.fetchNextItems(batchSize)
-            }
+    fun fetchNextItems() = viewModelScope.launch {
+        withContext(Dispatchers.Default) {
+            itemsRepository.fetchNextItems()
+        }
+    }
+
+    fun refresh() = viewModelScope.launch {
+        withContext(Dispatchers.Default) {
+            itemsRepository.refresh()
         }
     }
 }
