@@ -6,13 +6,13 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.magicbluepenguin.testapplication.data.cache.ItemDao
 import com.magicbluepenguin.testapplication.data.models.Item
-import com.magicbluepenguin.testapplication.data.network.RetrofitServiceProvider
+import com.magicbluepenguin.testapplication.data.network.ItemService
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
 
 class ItemsRepository(
-    val retrofitServiceProvider: RetrofitServiceProvider,
+    val itemService: ItemService,
     val itemDao: ItemDao,
     val batchSize: Int = 10
 ) {
@@ -30,21 +30,20 @@ class ItemsRepository(
     suspend fun refresh() {
         repositoryStatelistener?.invoke(RefreshInProgress(true))
 
-        val freshItems = retrofitServiceProvider.itemService.listItems()
+        val freshItems = itemService.listItems()
 
-        // Only clear out the old items if the request succeeds. This way we can ensure we can still
-        // show the user some data even when the server can't be reached
         if (!freshItems.isEmpty()) {
-            itemDao.deleteAll(itemDao.getAllItems().map { it.img })
             itemDao.insertAll(freshItems)
+            // Only clear out the old items if the request succeeds. This way we can ensure we can still
+            // show the user some data even when the server can't be reached
+            itemDao.deleteAllExcluding(freshItems.map { it.img })
         }
-
         repositoryStatelistener?.invoke(RefreshInProgress(false))
     }
 
     suspend fun fetchNextItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreItems(true))
-        val items = retrofitServiceProvider.itemService.listItems()
+        val items = itemService.listItems()
         itemDao.insertAll(items)
         repositoryStatelistener?.invoke(IsFetchingMoreItems(false))
     }

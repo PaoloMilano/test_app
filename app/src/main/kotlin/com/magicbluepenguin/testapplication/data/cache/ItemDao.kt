@@ -22,12 +22,12 @@ interface ItemDao {
     @Query("SELECT(CASE WHEN NOT EXISTS(SELECT NULL FROM item) THEN 1 ELSE 0 END) AS isEmpty")
     fun isEmpty(): Boolean
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(items: List<Item>)
 
     @Query("DELETE FROM item")
-    fun deleteAll()
+    fun deleteAll(): Int
 
-    @Query("DELETE FROM item WHERE img NOT IN (:images)")
-    fun deleteAll(images: List<String>)
+    @Query("DELETE FROM item WHERE img NOT IN (:itemsWithImg)")
+    fun deleteAllExcluding(itemsWithImg: List<String>): Int
 }

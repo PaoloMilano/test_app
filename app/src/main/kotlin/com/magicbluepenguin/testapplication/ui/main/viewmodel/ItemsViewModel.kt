@@ -1,8 +1,11 @@
 package com.magicbluepenguin.testapplication.ui.main.viewmodel
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -32,14 +35,22 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
             return ViewModelProvider(activityContext,
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                        val db = Room.databaseBuilder(
+                            activityContext,
+                            AppDatabase::class.java, "items_app_database"
+                        ).build()
+
+                        activityContext.lifecycle.addObserver(object : LifecycleObserver {
+                            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                            fun onDestroy() {
+                                db.close()
+                            }
+                        })
 
                         val itemsRepository =
                             ItemsRepository(
-                                RetrofitServiceProvider(authHeader),
-                                Room.databaseBuilder(
-                                    activityContext,
-                                    AppDatabase::class.java, "items_app_database"
-                                ).build().itemDao()
+                                RetrofitServiceProvider(authHeader).itemService,
+                                db.itemDao()
                             )
                         return ItemsViewModel(itemsRepository) as T
                     }
