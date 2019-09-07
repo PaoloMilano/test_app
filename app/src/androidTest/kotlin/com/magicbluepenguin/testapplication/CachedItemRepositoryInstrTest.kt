@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
-class ItemRepositoryInstrTest {
+class CachedItemRepositoryInstrTest {
 
     private val mockItemService = mockk<ItemService> {
         every { runBlocking { listItems() } } answers { emptyList() }
@@ -80,5 +80,20 @@ class ItemRepositoryInstrTest {
         latch.await(2, TimeUnit.SECONDS)
         latch.await()
         assertEquals(dummyItems, itemsCatcher)
+    }
+
+    @Test
+    fun testFetchingFirstBatch() = runBlocking {
+        every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
+        itemRepository.fetchNextItems()
+        verify { runBlocking { mockItemService.listItems() } }
+    }
+
+    @Test
+    fun testFetchingNextBatch() = runBlocking {
+        every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
+        itemDao.insertAll(dummyItems)
+        itemRepository.fetchNextItems()
+        verify { runBlocking { mockItemService.listItems(itemDao.getHighestId()) } }
     }
 }

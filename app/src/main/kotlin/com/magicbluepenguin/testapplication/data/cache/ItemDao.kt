@@ -16,6 +16,9 @@ interface ItemDao {
     @Query("SELECT * FROM item ORDER BY _id")
     fun getAllItems(): List<Item>
 
+    @Query("SELECT MAX(_id) FROM item")
+    fun getHighestId(): String?
+
     @Query("SELECT * FROM item LIMIT :limit OFFSET :offset")
     fun getItems(offset: Int, limit: Int): List<Item>
 

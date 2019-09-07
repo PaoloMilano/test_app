@@ -15,7 +15,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class ItemRepositoryTest {
+class CachedItemRepositoryTest {
 
     val mockItemDao = mockk<ItemDao> {
         every { runBlocking { insertAll(any()) } }.answers { Unit }

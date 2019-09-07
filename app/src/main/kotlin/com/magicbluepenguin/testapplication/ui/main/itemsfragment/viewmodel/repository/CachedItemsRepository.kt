@@ -42,8 +42,7 @@ class CachedItemsRepository(
 
     override suspend fun fetchNextItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreItems(true))
-        val items = itemService.listItems()
-        itemDao.insertAll(items)
+        itemDao.insertAll(itemService.listItems(itemDao.getHighestId()))
         repositoryStatelistener?.invoke(IsFetchingMoreItems(false))
     }
 
