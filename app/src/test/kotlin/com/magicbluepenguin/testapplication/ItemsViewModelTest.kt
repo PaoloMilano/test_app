@@ -51,13 +51,15 @@ class ItemsViewModelTest {
                 verifyOrder {
                     spyItemsRepository.setOnRepositoryStateListener(listener)
                     runBlocking { spyItemsRepository.refresh() }
-                    // TODO add call for check to `connect`
                 }
             }
         }
     }
 
     class TestItemsRepository : ItemsRepository {
+
+        override suspend fun fetchNewerItems() {
+        }
 
         var _listener: ((RepositoryState) -> Unit)? = null
         val listener: ((RepositoryState) -> Unit)
@@ -74,7 +76,7 @@ class ItemsViewModelTest {
         override suspend fun refresh() {
         }
 
-        override suspend fun fetchNextItems() {
+        override suspend fun fetchOlderItems() {
         }
     }
 }

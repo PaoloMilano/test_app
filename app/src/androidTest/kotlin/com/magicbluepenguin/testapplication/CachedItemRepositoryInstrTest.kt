@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 class CachedItemRepositoryInstrTest {
 
     private val mockItemService = mockk<ItemService> {
-        every { runBlocking { listItems() } } answers { emptyList() }
+        every { runBlocking { listItems(any(), any()) } } answers { emptyList() }
     }
     private var _itemRepository: CachedItemsRepository? = null
     private val itemRepository: CachedItemsRepository
@@ -59,7 +59,7 @@ class CachedItemRepositoryInstrTest {
 
         // We don't want this test to hang forever in case of failure so give it a time limit
         latch.await(2, TimeUnit.SECONDS)
-        assertEquals(dummyItems, itemsCatcher)
+        assertEquals(dummyItems.sortedBy { it._id }.reversed(), itemsCatcher)
     }
 
     @Test
@@ -79,21 +79,29 @@ class CachedItemRepositoryInstrTest {
         // We don't want this test to hang forever in case of failure so give it a time limit
         latch.await(2, TimeUnit.SECONDS)
         latch.await()
-        assertEquals(dummyItems, itemsCatcher)
+        assertEquals(dummyItems.sortedBy { it._id }.reversed(), itemsCatcher)
     }
 
     @Test
     fun testFetchingFirstBatch() = runBlocking {
         every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
-        itemRepository.fetchNextItems()
+        itemRepository.refresh()
         verify { runBlocking { mockItemService.listItems() } }
     }
 
     @Test
-    fun testFetchingNextBatch() = runBlocking {
+    fun testFetchingOlderBatch() = runBlocking {
         every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
         itemDao.insertAll(dummyItems)
-        itemRepository.fetchNextItems()
-        verify { runBlocking { mockItemService.listItems(itemDao.getLowestId()) } }
+        itemRepository.fetchOlderItems()
+        verify { runBlocking { mockItemService.listItems(untilId = itemDao.getOldestId()) } }
+    }
+
+    @Test
+    fun testFetchingNewerBatch() = runBlocking {
+        every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
+        itemDao.insertAll(dummyItems)
+        itemRepository.fetchNewerItems()
+        verify { runBlocking { mockItemService.listItems(fromId = itemDao.getMostRecentId()) } }
     }
 }

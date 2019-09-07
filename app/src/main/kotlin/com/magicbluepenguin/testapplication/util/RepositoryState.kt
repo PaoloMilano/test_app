@@ -2,9 +2,19 @@ package com.magicbluepenguin.testapplication.util
 
 sealed class RepositoryState
 
-class IsFetchingMoreItems(val value: Boolean) : RepositoryState() {
+class IsFetchingMoreRecentItems(val value: Boolean) : RepositoryState() {
     override fun equals(other: Any?): Boolean {
-        return other is IsFetchingMoreItems && other.value == value
+        return other is IsFetchingMoreRecentItems && other.value == value
+    }
+
+    override fun hashCode(): Int {
+        return toString().hashCode() + super.hashCode()
+    }
+}
+
+class IsFetchingMoreOlderItems(val value: Boolean) : RepositoryState() {
+    override fun equals(other: Any?): Boolean {
+        return other is IsFetchingMoreOlderItems && other.value == value
     }
 
     override fun hashCode(): Int {

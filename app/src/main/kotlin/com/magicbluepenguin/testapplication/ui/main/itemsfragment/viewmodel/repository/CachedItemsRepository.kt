@@ -7,7 +7,8 @@ import androidx.paging.PagedList
 import com.magicbluepenguin.testapplication.data.cache.ItemDao
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.data.network.ItemService
-import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
 
@@ -40,10 +41,16 @@ class CachedItemsRepository(
         repositoryStatelistener?.invoke(RefreshInProgress(false))
     }
 
-    override suspend fun fetchNextItems() {
-        repositoryStatelistener?.invoke(IsFetchingMoreItems(true))
-        itemDao.insertAll(itemService.listItems(itemDao.getLowestId()))
-        repositoryStatelistener?.invoke(IsFetchingMoreItems(false))
+    override suspend fun fetchOlderItems() {
+        repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(true))
+        itemDao.insertAll(itemService.listItems(untilId = itemDao.getOldestId()))
+        repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(false))
+    }
+
+    override suspend fun fetchNewerItems() {
+        repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(true))
+        itemDao.insertAll(itemService.listItems(fromId = itemDao.getMostRecentId()))
+        repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(false))
     }
 
     override fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit) {

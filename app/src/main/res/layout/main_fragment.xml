@@ -4,35 +4,48 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
+        <import type="androidx.lifecycle.LiveData" />
+
+        <import type="androidx.paging.PagedList" />
+
+        <import type="com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel" />
+
+        <import type="com.magicbluepenguin.testapplication.data.models.Item" />
 
         <variable
             name="itemsViewModel"
-            type="com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel" />
+            type="ItemsViewModel" />
 
         <variable
             name="items"
-            type="androidx.lifecycle.LiveData" />
+            type="LiveData&lt;PagedList&lt;Item>>" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
         tools:context=".ui.main.itemsfragment.MainFragment">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/pull_to_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/half_standard_margin"
+            android:layout_marginBottom="@dimen/half_standard_margin"
             app:onRefreshListener="@{() -> itemsViewModel.refresh()}"
             app:refreshing="@{ itemsViewModel.isRefreshing }">
 
             <com.magicbluepenguin.testapp.bindings.BoundRecyclerView
                 android:id="@+id/items_list_view"
                 android:name="com.magicbluepenguin.testapplication.ui.main.MainFragment"
-                isFetchingMore="@{ itemsViewModel.isFetchingMoreItems }"
+                isFetchingFromTop="@{ itemsViewModel.isFetchingMoreRecentItems }"
+                isFetchingFromBottom="@{ itemsViewModel.isFetchingMoreOlderItems }"
                 items="@{ items }"
-                onLastItemShown="@{()-> itemsViewModel.fetchNextItems() }"
+                onBottomReached="@{ ()-> itemsViewModel.fetchOlderItems() }"
+                onTopReached="@{ ()-> itemsViewModel.fetchNewerItems() }"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
@@ -42,5 +55,6 @@
                 tools:context=".customerlistactivity.CustomerListActivity"
                 tools:listitem="@layout/list_item" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -14,13 +14,15 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="@dimen/half_standard_margin">
 
         <TextView
             android:id="@+id/name_text_view"
             android:layout_width="0dp"
-            android:layout_height="700dp"
+            android:layout_height="100dp"
             android:text="@{item.text}"
+            android:background="@android:color/background_light"
             android:textAppearance="?attr/textAppearanceListItem"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

@@ -3,7 +3,8 @@ package com.magicbluepenguin.testapplication
 import com.magicbluepenguin.testapplication.data.cache.ItemDao
 import com.magicbluepenguin.testapplication.data.network.ItemService
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
-import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
 import dummyItems
@@ -63,14 +64,28 @@ class CachedItemRepositoryTest {
     }
 
     @Test
-    fun `test item inserts on fetching next`() = runBlocking {
+    fun `test item inserts on fetching older items`() = runBlocking {
+        every { mockItemDao.getOldestId() } answers { "" }
         val repositoryStateCatcher = mutableListOf<RepositoryState>()
         itemRepository.setOnRepositoryStateListener { repositoryStateCatcher.add(it) }
-        itemRepository.fetchNextItems()
+        itemRepository.fetchOlderItems()
 
         assertEquals(
             repositoryStateCatcher,
-            listOf(IsFetchingMoreItems(true), IsFetchingMoreItems(false))
+            listOf(IsFetchingMoreOlderItems(true), IsFetchingMoreOlderItems(false))
+        )
+    }
+
+    @Test
+    fun `test item inserts on fetching newer items`() = runBlocking {
+        every { mockItemDao.getMostRecentId() } answers { "" }
+        val repositoryStateCatcher = mutableListOf<RepositoryState>()
+        itemRepository.setOnRepositoryStateListener { repositoryStateCatcher.add(it) }
+        itemRepository.fetchNewerItems()
+
+        assertEquals(
+            repositoryStateCatcher,
+            listOf(IsFetchingMoreRecentItems(true), IsFetchingMoreRecentItems(false))
         )
     }
 
@@ -83,12 +98,13 @@ class CachedItemRepositoryTest {
     }
 
     @Test
-    fun `test item inserts on fetch`() = runBlocking {
+    fun `test item inserts on failed fetch`() = runBlocking {
         every { runBlocking { mockItemService.listItems() } }.answers { dummyItems }
         every { runBlocking { mockItemDao.insertAll(any()) } }.answers { Unit }
 
-        itemRepository.fetchNextItems()
+        itemRepository.refresh()
 
+        // Check that if the network does not return any item we leave the old ones there
         verify { mockItemDao.insertAll(dummyItems) }
     }
 }

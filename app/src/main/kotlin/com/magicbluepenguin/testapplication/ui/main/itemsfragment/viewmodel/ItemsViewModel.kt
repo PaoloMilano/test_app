@@ -16,7 +16,8 @@ import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.data.network.RetrofitServiceProvider
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ItemsRepository
-import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
+import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.NetworkError
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import kotlinx.coroutines.Dispatchers
@@ -26,9 +27,11 @@ import kotlinx.coroutines.withContext
 class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
 
     var itemsLiveData: LiveData<PagedList<Item>>? = null
-    var onLiveDataReadyListener: ((LiveData<PagedList<Item>>) -> Unit)? = null
-    val isFetchingMoreItems = MutableLiveData<Boolean>()
+    val isFetchingMoreRecentItems = MutableLiveData<Boolean>()
+    val isFetchingMoreOlderItems = MutableLiveData<Boolean>()
     val isRefreshing = MutableLiveData<Boolean>()
+
+    private var onLiveDataReadyListener: ((LiveData<PagedList<Item>>) -> Unit)? = null
 
     init {
         // Start by listening for state changes
@@ -37,8 +40,11 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
 
                 // Use return value to force `when` statement to be exhaustive
                 val ignore = when (repositoryState) {
-                    is IsFetchingMoreItems -> isFetchingMoreItems.value = repositoryState.value
-                    is RefreshInProgress -> isRefreshing.value = repositoryState.value
+                    is IsFetchingMoreOlderItems -> isFetchingMoreOlderItems.postValue(repositoryState.value)
+                    is IsFetchingMoreRecentItems -> isFetchingMoreRecentItems.postValue(repositoryState.value)
+                    is RefreshInProgress -> {
+                        isRefreshing.postValue(repositoryState.value)
+                    }
                     NetworkError -> TODO()
                 }
             }
@@ -48,9 +54,15 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
         refresh()
     }
 
-    fun fetchNextItems() = viewModelScope.launch {
+    fun fetchOlderItems() = viewModelScope.launch {
         withContext(Dispatchers.Default) {
-            itemsRepository.fetchNextItems()
+            itemsRepository.fetchOlderItems()
+        }
+    }
+
+    fun fetchNewerItems() = viewModelScope.launch {
+        withContext(Dispatchers.Default) {
+            itemsRepository.fetchNewerItems()
         }
     }
 

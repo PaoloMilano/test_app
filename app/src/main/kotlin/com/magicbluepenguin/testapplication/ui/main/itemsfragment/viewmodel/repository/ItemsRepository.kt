@@ -13,5 +13,7 @@ interface ItemsRepository {
 
     suspend fun refresh()
 
-    suspend fun fetchNextItems()
+    suspend fun fetchOlderItems()
+
+    suspend fun fetchNewerItems()
 }

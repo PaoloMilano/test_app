@@ -37,14 +37,14 @@ class ItemDaoInstrTest {
     @Test
     fun testInsertingAll() {
         itemDao.insertAll(dummyItems)
-        assertEquals(dummyItems, itemDao.getAllItems())
+        assertEquals(dummyItems.sortedBy { it._id }.reversed(), itemDao.getAllItems())
     }
 
     @Test
     fun testDoubleInsertResultsInUpdate() {
         itemDao.insertAll(dummyItems)
         itemDao.insertAll(modifiedDummyItems)
-        assertEquals(modifiedDummyItems, itemDao.getAllItems())
+        assertEquals(modifiedDummyItems.sortedBy { it._id }.reversed(), itemDao.getAllItems())
     }
 
     @Test
@@ -63,10 +63,10 @@ class ItemDaoInstrTest {
 
         // Exclude the first 2
         val excludedItems = dummyItems.take(2)
-        itemDao.deleteAllExcluding(excludedItems.map { it.img })
+        itemDao.deleteAllExcluding(excludedItems.map { it._id })
 
         // Check that the first 2 were kept
         assertFalse(itemDao.getAllItems().isEmpty())
-        assertEquals(excludedItems, itemDao.getAllItems())
+        assertEquals(excludedItems.sortedBy { it._id }.reversed(), itemDao.getAllItems())
     }
 }

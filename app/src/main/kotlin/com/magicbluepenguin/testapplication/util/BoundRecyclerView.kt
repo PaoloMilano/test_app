@@ -2,7 +2,11 @@ package com.magicbluepenguin.testapp.bindings
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,26 +16,100 @@ import androidx.recyclerview.widget.RecyclerView
  * View bindings for RecyclerView
  */
 @BindingAdapter("items")
-fun <T : DifferentiableObject> bindList(view: BoundRecyclerView<T>, list: List<T>?) {
-    list?.let {
-        view.boundAdapter?.setItems(it)
-    }
+fun <T : BoundPagedRecyclerViewAdapter.DifferentiableObject> bindList(
+    view: BoundRecyclerView<T>,
+    list: LiveData<PagedList<T>>?
+) {
+    list?.observe(view.context as AppCompatActivity, object : Observer<PagedList<T>> {
+        override fun onChanged(t: PagedList<T>?) {
+            view.boundAdapter?.submitList(t)
+        }
+    })
 }
 
-@BindingAdapter("isFetchingMore")
-fun onFetching(view: BoundRecyclerView<*>, isFetchingMore: Boolean) {
-    view.boundAdapter?.isFetchingMore = isFetchingMore
+@BindingAdapter("isFetchingFromTop")
+fun onFetchingFromTop(view: BoundRecyclerView<*>, isFetchingFromTop: LiveData<Boolean>) {
+    isFetchingFromTop.observe(view.context as AppCompatActivity, object : Observer<Boolean> {
+        override fun onChanged(t: Boolean?) {
+            view.boundAdapter?.run {
+                if (t != null && t != topProgressVisibility) {
+                    topProgressVisibility = t
+                    if (topProgressVisibility) {
+                        notifyItemInserted(0)
+                    } else {
+                        notifyItemRemoved(0)
+                    }
+                }
+            }
+        }
+    })
 }
 
-@BindingAdapter("onLastItemShown")
-fun onLastItemShown(view: BoundRecyclerView<*>, fetchNextFunction: () -> Unit) {
+@BindingAdapter("isFetchingFromBottom")
+fun onFetchingFromBottom(view: BoundRecyclerView<*>, isFetchingFromBottom: LiveData<Boolean>) {
+    isFetchingFromBottom.observe(view.context as AppCompatActivity, object : Observer<Boolean> {
+        override fun onChanged(t: Boolean?) {
+            view.boundAdapter?.run {
+                if (t != null && t != bottomProgressVisibility) {
+                    bottomProgressVisibility = t
+                    if (bottomProgressVisibility) {
+                        notifyItemInserted(itemCount)
+                    } else {
+                        notifyItemRemoved(itemCount)
+                    }
+                }
+            }
+        }
+    })
+}
+
+@BindingAdapter("onBottomReached")
+fun onLastItemShown(view: BoundRecyclerView<*>, onBottomReached: (Boolean) -> Unit) {
     (view.layoutManager as? LinearLayoutManager)?.let {
         view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                (recyclerView.layoutManager as? LinearLayoutManager)?.let {
-                    fetchNextFunction.invoke()
+
+                if (dy < 0) {
+                    return
+                }
+
+                view.boundAdapter?.run {
+                    if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() == itemCount - fetchFromBottomThreshold) {
+                        onBottomReached.invoke(true)
+                    }
+                }
+            }
+        })
+    }
+}
+
+@BindingAdapter("onTopReached")
+fun onFirstItemShown(view: BoundRecyclerView<*>, onTopReached: (Boolean) -> Unit) {
+    (view.layoutManager as? LinearLayoutManager)?.let {
+
+        var isScrolling = false
+
+        view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    isScrolling = true
+                }
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (!isScrolling || dy > 0) {
+                    return
+                }
+
+                if (!recyclerView.canScrollVertically(-1)) {
+                    onTopReached.invoke(true)
+                    isScrolling = false
                 }
             }
         })
@@ -41,7 +119,10 @@ fun onLastItemShown(view: BoundRecyclerView<*>, fetchNextFunction: () -> Unit) {
 /**
  * Generic RecyclerView that uses generics to enable reuse with data bindings
  */
-class BoundRecyclerView<T : DifferentiableObject>(context: Context, attrs: AttributeSet) :
+class BoundRecyclerView<T : BoundPagedRecyclerViewAdapter.DifferentiableObject>(
+    context: Context,
+    attrs: AttributeSet
+) :
     RecyclerView(context, attrs) {
 
     var boundAdapter: BoundPagedRecyclerViewAdapter<T, *>?
@@ -63,17 +144,10 @@ class BoundRecyclerView<T : DifferentiableObject>(context: Context, attrs: Attri
  * Custom Adapter that uses generics to enable reuse with data bindings. This adapter is low on functionality, limiting
  * itself to providing fields for data to be updated while letting subclasses decide how to answer update events
  */
-abstract class BoundPagedRecyclerViewAdapter<T : DifferentiableObject, I : RecyclerView.ViewHolder> :
-    PagedListAdapter<T, I> {
-
-    val itemList = ArrayList<T>()
-    var isFetchingMore = false
-        set(value) {
-            field = value
-            notifyItemChanged(itemCount)
-        }
-
-    constructor() : super(object : DiffUtil.ItemCallback<T>() {
+abstract class BoundPagedRecyclerViewAdapter<T : BoundPagedRecyclerViewAdapter.DifferentiableObject, I : RecyclerView.ViewHolder>(
+    val fetchFromBottomThreshold: Int = 3
+) :
+    PagedListAdapter<T, I>(object : DiffUtil.ItemCallback<T>() {
 
         override fun areItemsTheSame(oldItem: T, newItem: T): Boolean {
             return oldItem.hasSameId(newItem)
@@ -82,26 +156,13 @@ abstract class BoundPagedRecyclerViewAdapter<T : DifferentiableObject, I : Recyc
         override fun areContentsTheSame(oldItem: T, newItem: T): Boolean {
             return oldItem.hasSameContents(newItem)
         }
-    })
+    }) {
 
-    override fun getItem(position: Int): T? {
-        return if (position < itemList.size) {
-            itemList.get(position)
-        } else {
-            null
-        }
+    var topProgressVisibility = false
+    var bottomProgressVisibility = false
+
+    interface DifferentiableObject {
+        fun hasSameId(other: DifferentiableObject): Boolean
+        fun hasSameContents(other: DifferentiableObject): Boolean
     }
-
-    fun setItems(items: List<T>) {
-        itemList.clear()
-        itemList.addAll(items)
-        notifyDataSetChanged()
-    }
-
-    override fun getItemCount() = itemList.size
-}
-
-interface DifferentiableObject {
-    fun hasSameId(other: DifferentiableObject): Boolean
-    fun hasSameContents(other: DifferentiableObject): Boolean
 }
