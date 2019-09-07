@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import androidx.databinding.BindingAdapter
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -20,6 +21,21 @@ fun <T : DifferentiableObject> bindList(view: BoundRecyclerView<T>, list: List<T
 @BindingAdapter("isFetchingMore")
 fun onFetching(view: BoundRecyclerView<*>, isFetchingMore: Boolean) {
     view.boundAdapter?.isFetchingMore = isFetchingMore
+}
+
+@BindingAdapter("onLastItemShown")
+fun onLastItemShown(view: BoundRecyclerView<*>, fetchNextFunction: () -> Unit) {
+    (view.layoutManager as? LinearLayoutManager)?.let {
+        view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                (recyclerView.layoutManager as? LinearLayoutManager)?.let {
+                    fetchNextFunction.invoke()
+                }
+            }
+        })
+    }
 }
 
 /**
@@ -52,10 +68,10 @@ abstract class BoundPagedRecyclerViewAdapter<T : DifferentiableObject, I : Recyc
 
     val itemList = ArrayList<T>()
     var isFetchingMore = false
-    set(value) {
-        field = value
-        notifyItemChanged(itemCount)
-    }
+        set(value) {
+            field = value
+            notifyItemChanged(itemCount)
+        }
 
     constructor() : super(object : DiffUtil.ItemCallback<T>() {
 
