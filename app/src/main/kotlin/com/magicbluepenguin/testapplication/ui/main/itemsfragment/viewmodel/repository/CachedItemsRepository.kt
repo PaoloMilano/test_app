@@ -42,7 +42,7 @@ class CachedItemsRepository(
 
     override suspend fun fetchNextItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreItems(true))
-        itemDao.insertAll(itemService.listItems(itemDao.getHighestId()))
+        itemDao.insertAll(itemService.listItems(itemDao.getLowestId()))
         repositoryStatelistener?.invoke(IsFetchingMoreItems(false))
     }
 

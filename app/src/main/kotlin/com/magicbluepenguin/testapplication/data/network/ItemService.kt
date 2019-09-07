@@ -7,5 +7,5 @@ import retrofit2.http.Query
 interface ItemService {
 
     @GET("items")
-    suspend fun listItems(@Query("since_id")startingId: String? = null): List<Item>
+    suspend fun listItems(@Query("max_id") lowestId: String? = null): List<Item>
 }

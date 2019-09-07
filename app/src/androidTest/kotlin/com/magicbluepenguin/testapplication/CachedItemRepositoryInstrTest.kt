@@ -94,6 +94,6 @@ class CachedItemRepositoryInstrTest {
         every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
         itemDao.insertAll(dummyItems)
         itemRepository.fetchNextItems()
-        verify { runBlocking { mockItemService.listItems(itemDao.getHighestId()) } }
+        verify { runBlocking { mockItemService.listItems(itemDao.getLowestId()) } }
     }
 }
