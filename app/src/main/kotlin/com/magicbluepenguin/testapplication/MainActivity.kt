@@ -2,7 +2,7 @@ package com.magicbluepenguin.testapplication
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.magicbluepenguin.testapplication.ui.main.MainFragment
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.MainFragment
 
 class MainActivity : AppCompatActivity() {
 

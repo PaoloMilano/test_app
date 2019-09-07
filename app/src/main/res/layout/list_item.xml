@@ -19,7 +19,7 @@
         <TextView
             android:id="@+id/name_text_view"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="700dp"
             android:text="@{item.text}"
             android:textAppearance="?attr/textAppearanceListItem"
             app:layout_constraintBottom_toBottomOf="parent"

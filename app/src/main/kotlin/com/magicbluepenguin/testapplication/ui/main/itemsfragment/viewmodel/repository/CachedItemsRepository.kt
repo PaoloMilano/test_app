@@ -1,4 +1,4 @@
-package com.magicbluepenguin.testapplication.ui.main.viewmodel
+package com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
@@ -11,23 +11,22 @@ import com.magicbluepenguin.testapplication.util.IsFetchingMoreItems
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
 
-class ItemsRepository(
+class CachedItemsRepository(
     val itemService: ItemService,
     val itemDao: ItemDao,
-    val batchSize: Int = 10
-) {
+    val pageSize: Int = 10
+) : ItemsRepository {
     var repositoryStatelistener: ((RepositoryState) -> Unit)? = null
 
-    fun connect(): LiveData<PagedList<Item>> {
+    override fun connect(): LiveData<PagedList<Item>> {
         val factory: DataSource.Factory<Int, Item> = itemDao.getAllItemsPaged()
-
         return LivePagedListBuilder<Int, Item>(
             factory,
-            50
+            pageSize
         ).build()
     }
 
-    suspend fun refresh() {
+    override suspend fun refresh() {
         repositoryStatelistener?.invoke(RefreshInProgress(true))
 
         val freshItems = itemService.listItems()
@@ -36,19 +35,19 @@ class ItemsRepository(
             itemDao.insertAll(freshItems)
             // Only clear out the old items if the request succeeds. This way we can ensure we can still
             // show the user some data even when the server can't be reached
-            itemDao.deleteAllExcluding(freshItems.map { it.img })
+            itemDao.deleteAllExcluding(freshItems.map { it._id })
         }
         repositoryStatelistener?.invoke(RefreshInProgress(false))
     }
 
-    suspend fun fetchNextItems() {
+    override suspend fun fetchNextItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreItems(true))
         val items = itemService.listItems()
         itemDao.insertAll(items)
         repositoryStatelistener?.invoke(IsFetchingMoreItems(false))
     }
 
-    fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit) {
+    override fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit) {
         repositoryStatelistener = listener
     }
 }

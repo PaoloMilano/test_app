@@ -5,11 +5,12 @@ import androidx.test.runner.AndroidJUnit4
 import com.magicbluepenguin.testapplication.data.cache.ItemDao
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.data.network.ItemService
-import com.magicbluepenguin.testapplication.ui.main.viewmodel.ItemsRepository
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
 import dummyItems
 import getInMemoryDb
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -21,12 +22,11 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class ItemRepositoryInstrTest {
 
-    private val mockItemService = mockk<ItemService>() {
+    private val mockItemService = mockk<ItemService> {
         every { runBlocking { listItems() } } answers { emptyList() }
     }
-
-    private var _itemRepository: ItemsRepository? = null
-    private val itemRepository: ItemsRepository
+    private var _itemRepository: CachedItemsRepository? = null
+    private val itemRepository: CachedItemsRepository
         get() = _itemRepository!!
 
     private var _itemDao: ItemDao? = null
@@ -36,7 +36,11 @@ class ItemRepositoryInstrTest {
     @Before
     fun setUp() {
         _itemDao = getInMemoryDb(InstrumentationRegistry.getInstrumentation().context).itemDao()
-        _itemRepository = ItemsRepository(mockItemService, itemDao)
+        _itemRepository =
+            CachedItemsRepository(
+                mockItemService,
+                itemDao
+            )
     }
 
     @Test

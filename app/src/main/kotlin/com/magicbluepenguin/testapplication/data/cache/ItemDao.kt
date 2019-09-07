@@ -10,10 +10,10 @@ import com.magicbluepenguin.testapplication.data.models.Item
 @Dao
 interface ItemDao {
 
-    @Query("SELECT * FROM item")
+    @Query("SELECT * FROM item ORDER BY _id")
     fun getAllItemsPaged(): DataSource.Factory<Int, Item>
 
-    @Query("SELECT * FROM item")
+    @Query("SELECT * FROM item ORDER BY _id")
     fun getAllItems(): List<Item>
 
     @Query("SELECT * FROM item LIMIT :limit OFFSET :offset")
@@ -28,6 +28,6 @@ interface ItemDao {
     @Query("DELETE FROM item")
     fun deleteAll(): Int
 
-    @Query("DELETE FROM item WHERE img NOT IN (:itemsWithImg)")
-    fun deleteAllExcluding(itemsWithImg: List<String>): Int
+    @Query("DELETE FROM item WHERE _id NOT IN (:itemsId)")
+    fun deleteAllExcluding(itemsId: List<String>): Int
 }

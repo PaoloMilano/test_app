@@ -1,4 +1,4 @@
-package com.magicbluepenguin.testapplication.ui.main
+package com.magicbluepenguin.testapplication.ui.main.itemsfragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,12 +14,13 @@ import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.databinding.ListItemBinding
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
 import com.magicbluepenguin.testapplication.databinding.RefreshListItemBinding
-import com.magicbluepenguin.testapplication.ui.main.viewmodel.ItemsViewModel
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel
 
 class MainFragment : Fragment() {
 
     companion object {
-        fun newInstance() = MainFragment()
+        fun newInstance() =
+            MainFragment()
     }
 
     override fun onCreateView(
@@ -35,19 +36,24 @@ class MainFragment : Fragment() {
 
         with(activity as? AppCompatActivity) {
             this?.let {
-                val itemsViewModel = ItemsViewModel.getInstance(
-                    activity as AppCompatActivity,
-                    "463154134a6642d51c714d685ec0efcb"
-                )
 
                 val dataBinding = DataBindingUtil.setContentView<MainFragmentBinding>(
                     this,
                     R.layout.main_fragment
-                )
-                dataBinding.lifecycleOwner = viewLifecycleOwner
-                dataBinding.itemsListView.boundAdapter =
-                    CustomerRecyclerViewAdapter()
-                dataBinding.itemsViewModel = itemsViewModel
+                ).apply {
+                    lifecycleOwner = viewLifecycleOwner
+                    itemsListView.boundAdapter = CustomerRecyclerViewAdapter()
+                }
+
+                ItemsViewModel.getInstanceWithCahedRepository(
+                    activity as AppCompatActivity,
+                    "463154134a6642d51c714d685ec0efcb"
+                ).apply {
+                    onDataStreamReadyListener {
+                        dataBinding.items = itemsLiveData
+                    }
+                    dataBinding.itemsViewModel = this
+                }
             }
         }
     }
