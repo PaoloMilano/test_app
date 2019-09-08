@@ -4,4 +4,6 @@
     <string name="network_unavailable_error">Something went wrong. Please check your internet connetion.</string>
     <string name="network_unsecure_error">Your connection is not secure. The app cannot be used at the moment. Please check your connection and try again.</string>
     <string name="close">close</string>
+    <string name="text">Text:</string>
+    <string name="confidence">Confidence:</string>
 </resources>
