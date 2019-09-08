@@ -9,6 +9,7 @@ import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
+import com.magicbluepenguin.testapplication.util.UnsecureConnectionError
 import dummyItems
 import io.mockk.every
 import io.mockk.mockk
@@ -20,6 +21,7 @@ import org.junit.Before
 import org.junit.Test
 import retrofit2.HttpException
 import java.net.SocketException
+import javax.net.ssl.SSLException
 
 class CachedItemRepositoryTest {
 
@@ -142,6 +144,22 @@ class CachedItemRepositoryTest {
 
         assertEquals(
             (0..2).map { NetworkUnavailableError },
+            repositoryStateCatcher.filterIsInstance(NetworkUnavailableError::class.java)
+        )
+    }
+
+    @Test
+    fun `test ssl error handling with state update`() = runBlocking {
+        val repositoryStateCatcher = mutableListOf<RepositoryState>()
+        itemRepository.setOnRepositoryStateListener { repositoryStateCatcher.add(it) }
+
+        val networkError = SSLException("")
+        `test network error handling`(networkError) { runBlocking { itemRepository.refresh() } }
+        `test network error handling`(networkError) { runBlocking { itemRepository.fetchNewerItems() } }
+        `test network error handling`(networkError) { runBlocking { itemRepository.fetchOlderItems() } }
+
+        assertEquals(
+            (0..2).map { UnsecureConnectionError },
             repositoryStateCatcher.filterIsInstance(NetworkUnavailableError::class.java)
         )
     }

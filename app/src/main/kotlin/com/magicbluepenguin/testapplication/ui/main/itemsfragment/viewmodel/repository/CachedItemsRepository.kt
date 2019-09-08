@@ -13,7 +13,9 @@ import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
+import com.magicbluepenguin.testapplication.util.UnsecureConnectionError
 import java.net.SocketException
+import javax.net.ssl.SSLException
 
 class CachedItemsRepository(
     val itemService: ItemService,
@@ -62,6 +64,7 @@ class CachedItemsRepository(
         } catch (ex: Exception) {
             when (ex) {
                 is SocketException -> repositoryStatelistener?.invoke(NetworkUnavailableError)
+                is SSLException -> repositoryStatelistener?.invoke(UnsecureConnectionError)
                 else -> repositoryStatelistener?.invoke(GenericNetworkError)
             }
         }

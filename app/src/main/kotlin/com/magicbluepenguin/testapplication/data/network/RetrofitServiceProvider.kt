@@ -1,5 +1,6 @@
 package com.magicbluepenguin.testapplication.data.network
 
+import okhttp3.CertificatePinner
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -9,6 +10,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 class RetrofitServiceProvider(val authHeader: String) {
 
     private val retrofit by lazy {
+        val certPinner = CertificatePinner.Builder()
+            .add(
+                "marlove.net",
+                "sha256/rCCCPxtKvFVDrKOPDSfirp4bQOYw4mIVKn8fZxgQcs4="
+            )
+            .build()
         val defaultHttpClient = OkHttpClient.Builder()
             .addInterceptor(object : Interceptor {
 
@@ -17,7 +24,8 @@ class RetrofitServiceProvider(val authHeader: String) {
                         .addHeader("Authorization", authHeader).build()
                     return chain.proceed(authorisedRequest)
                 }
-            }).build()
+            })
+            .certificatePinner(certPinner).build()
 
         Retrofit.Builder()
             .client(defaultHttpClient)

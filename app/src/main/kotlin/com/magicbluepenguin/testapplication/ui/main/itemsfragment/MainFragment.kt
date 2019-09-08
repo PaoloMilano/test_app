@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -20,6 +22,7 @@ import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.Item
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.NetworkError
 import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
+import com.magicbluepenguin.testapplication.util.UnsecureConnectionError
 
 class MainFragment : Fragment() {
 
@@ -67,20 +70,25 @@ class MainFragment : Fragment() {
                 viewModel.networkError.observe(viewLifecycleOwner,
                     Observer<NetworkError> { error ->
                         (activity?.findViewById(android.R.id.content) as View).run {
-                            val errorStringRes = when (error!!) {
-                                is GenericNetworkError -> R.string.generic_network_error
-                                is NetworkUnavailableError -> R.string.network_unavailable_error
+                            val activityContext = this.context
+                            val ignore = when (error!!) {
+                                is GenericNetworkError -> showSnackBar(R.string.generic_network_error)
+                                is NetworkUnavailableError -> showSnackBar(R.string.network_unavailable_error)
+                                is UnsecureConnectionError -> {
+                                    AlertDialog.Builder(activityContext)
+                                        .setCancelable(false)
+                                        .setMessage(R.string.network_unsecure_error)
+                                        .setPositiveButton(R.string.close) { dialog, id -> finish() }
+                                        .create().show()
+                                }
                             }
-
-                            Snackbar.make(
-                                this,
-                                errorStringRes,
-                                Snackbar.LENGTH_SHORT
-                            ).show()
                         }
                     })
             }
         }
+    }
+
+    private fun showSnackBar(@StringRes stringRes: Int, duration: Int? = Snackbar.LENGTH_SHORT) {
     }
 
     class CustomerRecyclerViewAdapter() :

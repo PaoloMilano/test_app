@@ -25,3 +25,5 @@ sealed class NetworkError : RepositoryState()
 object GenericNetworkError : NetworkError()
 
 object NetworkUnavailableError : NetworkError()
+
+object UnsecureConnectionError : NetworkError()
