@@ -151,7 +151,9 @@ class CachedImageItemRepositoryTest {
     @Test
     fun `test ssl error handling with state update`() = runBlocking {
         val repositoryStateCatcher = mutableListOf<RepositoryState>()
-        itemRepository.setOnRepositoryStateListener { repositoryStateCatcher.add(it) }
+        itemRepository.setOnRepositoryStateListener {
+            repositoryStateCatcher.add(it)
+        }
 
         val networkError = SSLException("")
         `test network error handling`(networkError) { runBlocking { itemRepository.refresh() } }
@@ -160,7 +162,7 @@ class CachedImageItemRepositoryTest {
 
         assertEquals(
             (0..2).map { UnsecureConnectionError },
-            repositoryStateCatcher.filterIsInstance(NetworkUnavailableError::class.java)
+            repositoryStateCatcher.filterIsInstance(UnsecureConnectionError::class.java)
         )
     }
 
