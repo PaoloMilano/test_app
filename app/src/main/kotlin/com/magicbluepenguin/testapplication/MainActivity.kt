@@ -2,7 +2,7 @@ package com.magicbluepenguin.testapplication
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.MainFragment
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.ImageItemsFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
+                .replace(R.id.container, ImageItemsFragment.newInstance())
                 .commitNow()
         }
     }

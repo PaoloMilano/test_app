@@ -9,17 +9,17 @@
 
         <import type="androidx.paging.PagedList" />
 
-        <import type="com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel" />
+        <import type="com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ImageItemsViewModel" />
 
-        <import type="com.magicbluepenguin.testapplication.data.models.Item" />
+        <import type="com.magicbluepenguin.testapplication.data.models.ImageItem" />
 
         <variable
             name="itemsViewModel"
-            type="ItemsViewModel" />
+            type="ImageItemsViewModel" />
 
         <variable
-            name="items"
-            type="LiveData&lt;PagedList&lt;Item>>" />
+            name="imageItems"
+            type="LiveData&lt;PagedList&lt;ImageItem>>" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorPrimary"
-        tools:context=".ui.main.itemsfragment.MainFragment">
+        tools:context=".ui.main.itemsfragment.ImageItemsFragment">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/pull_to_refresh"
@@ -43,7 +43,7 @@
                 android:name="com.magicbluepenguin.testapplication.ui.main.MainFragment"
                 isFetchingFromTop="@{ itemsViewModel.isFetchingMoreRecentItems }"
                 isFetchingFromBottom="@{ itemsViewModel.isFetchingMoreOlderItems }"
-                items="@{ items }"
+                items="@{ imageItems }"
                 onBottomReached="@{ ()-> itemsViewModel.fetchOlderItems() }"
                 onTopReached="@{ ()-> itemsViewModel.fetchNewerItems() }"
                 android:layout_width="match_parent"
@@ -51,8 +51,6 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:scrollbars="vertical"
-                app:layoutManager="LinearLayoutManager"
-                tools:context=".customerlistactivity.CustomerListActivity"
                 tools:listitem="@layout/list_item" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

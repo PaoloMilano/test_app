@@ -13,18 +13,18 @@ import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.magicbluepenguin.testapplication.R
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.Adapter.CustomerRecyclerViewAdapter
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.Adapter.ImageItemsRecyclerViewAdapter
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ImageItemsViewModel
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.NetworkError
 import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
 import com.magicbluepenguin.testapplication.util.UnsecureConnectionError
 
-class MainFragment : Fragment() {
+class ImageItemsFragment : Fragment() {
 
     companion object {
         fun newInstance() =
-            MainFragment()
+            ImageItemsFragment()
     }
 
     override fun onCreateView(
@@ -50,16 +50,16 @@ class MainFragment : Fragment() {
                     R.layout.main_fragment
                 ).apply {
                     lifecycleOwner = viewLifecycleOwner
-                    itemsListView.boundAdapter = CustomerRecyclerViewAdapter()
+                    itemsListView.boundAdapter = ImageItemsRecyclerViewAdapter()
                 }
 
-                val viewModel = ItemsViewModel.getInstanceWithCahedRepository(
+                val viewModel = ImageItemsViewModel.getInstanceWithCahedRepository(
                     this,
                     "463154134a6642d51c714d685ec0efcb",
                     "sha256/rCCCPxtKvFVDrKOPDSfirp4bQOYw4mIVKn8fZxgQcs4="
                 ).apply {
                     onDataStreamReadyListener {
-                        dataBinding.items = itemsLiveData
+                        dataBinding.imageItems = imageItemsLiveData
                     }
                     dataBinding.itemsViewModel = this
                 }
@@ -75,7 +75,7 @@ class MainFragment : Fragment() {
                                     AlertDialog.Builder(activityContext)
                                         .setCancelable(false)
                                         .setMessage(R.string.network_unsecure_error)
-                                        .setPositiveButton(R.string.close) { dialog, id -> finish() }
+                                        .setPositiveButton(R.string.close) { _, _ -> finish() }
                                         .create().show()
                                 }
                             }

@@ -2,12 +2,12 @@ package com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.rep
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
-import com.magicbluepenguin.testapplication.data.models.Item
+import com.magicbluepenguin.testapplication.data.models.ImageItem
 import com.magicbluepenguin.testapplication.util.RepositoryState
 
-interface ItemsRepository {
+interface ImageItemsRepository {
 
-    fun connect(): LiveData<PagedList<Item>>
+    fun connect(): LiveData<PagedList<ImageItem>>
 
     fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit)
 

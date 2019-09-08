@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import com.magicbluepenguin.testapp.bindings.BoundPagedRecyclerViewAdapter
 
 @Entity
-data class Item(
+data class ImageItem(
     @PrimaryKey val _id: String,
     val img: String,
     val text: String,
@@ -13,7 +13,7 @@ data class Item(
 ) :
     BoundPagedRecyclerViewAdapter.DifferentiableObject {
     override fun hasSameContents(other: BoundPagedRecyclerViewAdapter.DifferentiableObject): Boolean {
-        return if (other is Item) {
+        return if (other is ImageItem) {
             other.toString() == toString()
         } else {
             false
@@ -21,7 +21,7 @@ data class Item(
     }
 
     override fun hasSameId(other: BoundPagedRecyclerViewAdapter.DifferentiableObject): Boolean {
-        return if (other is Item) {
+        return if (other is ImageItem) {
             other._id == _id
         } else {
             false

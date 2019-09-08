@@ -12,10 +12,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.room.Room
 import com.magicbluepenguin.testapplication.data.cache.AppDatabase
-import com.magicbluepenguin.testapplication.data.models.Item
+import com.magicbluepenguin.testapplication.data.models.ImageItem
 import com.magicbluepenguin.testapplication.data.network.RetrofitServiceProvider
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ItemsRepository
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedImageItemsRepository
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ImageItemsRepository
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
 import com.magicbluepenguin.testapplication.util.NetworkError
@@ -24,15 +24,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
+class ImageItemsViewModel(val itemsRepository: ImageItemsRepository) : ViewModel() {
 
-    var itemsLiveData: LiveData<PagedList<Item>>? = null
+    var imageItemsLiveData: LiveData<PagedList<ImageItem>>? = null
     val isFetchingMoreRecentItems = MutableLiveData<Boolean>()
     val isFetchingMoreOlderItems = MutableLiveData<Boolean>()
     val isRefreshing = MutableLiveData<Boolean>()
     val networkError = MutableLiveData<NetworkError>()
 
-    private var onLiveDataReadyListener: ((LiveData<PagedList<Item>>) -> Unit)? = null
+    private var onLiveDataReadyListener: ((LiveData<PagedList<ImageItem>>) -> Unit)? = null
 
     init {
         // Start by listening for state changes
@@ -76,11 +76,11 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
             itemsRepository.refresh()
         }
 
-        if (itemsLiveData == null) {
+        if (imageItemsLiveData == null) {
 
             // Connect to the stream after refreshing so we show fresh latest available data
             itemsRepository.connect().let {
-                itemsLiveData = it
+                imageItemsLiveData = it
                 if (onLiveDataReadyListener != null) {
                     onLiveDataReadyListener?.invoke(it)
                 }
@@ -88,9 +88,9 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
         }
     }
 
-    fun onDataStreamReadyListener(listener: (LiveData<PagedList<Item>>) -> Unit) {
+    fun onDataStreamReadyListener(listener: (LiveData<PagedList<ImageItem>>) -> Unit) {
         onLiveDataReadyListener = listener
-        itemsLiveData?.let(listener)
+        imageItemsLiveData?.let(listener)
     }
 
     companion object {
@@ -101,7 +101,7 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
             activityContext: AppCompatActivity,
             authHeader: String,
             certPin: String
-        ): ItemsViewModel {
+        ): ImageItemsViewModel {
             return ViewModelProvider(activityContext,
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
@@ -118,13 +118,13 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
                         })
 
                         val itemsRepository =
-                            CachedItemsRepository(
+                            CachedImageItemsRepository(
                                 RetrofitServiceProvider(authHeader, certPin).itemService,
-                                db.itemDao()
+                                db.imageItemDao()
                             )
-                        return ItemsViewModel(itemsRepository) as T
+                        return ImageItemsViewModel(itemsRepository) as T
                     }
-                }).get(ItemsViewModel::class.java)
+                }).get(ImageItemsViewModel::class.java)
         }
     }
 }

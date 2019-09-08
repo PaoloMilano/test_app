@@ -2,9 +2,9 @@ package com.magicbluepenguin.testapplication
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
-import com.magicbluepenguin.testapplication.data.models.Item
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ItemsRepository
+import com.magicbluepenguin.testapplication.data.models.ImageItem
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ImageItemsViewModel
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ImageItemsRepository
 import com.magicbluepenguin.testapplication.util.RepositoryState
 import io.mockk.mockk
 import io.mockk.spyk
@@ -23,7 +23,7 @@ import org.junit.Test
 
 @ObsoleteCoroutinesApi
 @ExperimentalCoroutinesApi
-class ItemsViewModelTest {
+class ImageItemsViewModelTest {
 
     private val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
@@ -42,7 +42,7 @@ class ItemsViewModelTest {
 
     @Test
     fun `test initialisation`() {
-        ItemsViewModel(spyItemsRepository)
+        ImageItemsViewModel(spyItemsRepository)
 
         runBlocking {
             launch(Dispatchers.Main) {
@@ -56,7 +56,7 @@ class ItemsViewModelTest {
         }
     }
 
-    class TestItemsRepository : ItemsRepository {
+    class TestItemsRepository : ImageItemsRepository {
 
         override suspend fun fetchNewerItems() {
         }
@@ -65,7 +65,7 @@ class ItemsViewModelTest {
         val listener: ((RepositoryState) -> Unit)
             get() = _listener!!
 
-        override fun connect(): LiveData<PagedList<Item>> {
+        override fun connect(): LiveData<PagedList<ImageItem>> {
             return mockk()
         }
 

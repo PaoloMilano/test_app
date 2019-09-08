@@ -2,10 +2,10 @@ package com.magicbluepenguin.testapplication
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
-import com.magicbluepenguin.testapplication.data.cache.ItemDao
-import com.magicbluepenguin.testapplication.data.models.Item
+import com.magicbluepenguin.testapplication.data.cache.ImageItemDao
+import com.magicbluepenguin.testapplication.data.models.ImageItem
 import com.magicbluepenguin.testapplication.data.network.ItemService
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedImageItemsRepository
 import dummyItems
 import getInMemoryDb
 import io.mockk.every
@@ -28,29 +28,29 @@ class CachedItemRepositoryInstrTest {
     private val mockItemService = mockk<ItemService> {
         every { runBlocking { listItems(any(), any()) } } answers { emptyList() }
     }
-    private var _itemRepository: CachedItemsRepository? = null
-    private val itemRepository: CachedItemsRepository
-        get() = _itemRepository!!
+    private var _imageItemRepository: CachedImageItemsRepository? = null
+    private val itemRepository: CachedImageItemsRepository
+        get() = _imageItemRepository!!
 
-    private var _itemDao: ItemDao? = null
-    private val itemDao: ItemDao
-        get() = _itemDao!!
+    private var _imageItemDao: ImageItemDao? = null
+    private val imageItemDao: ImageItemDao
+        get() = _imageItemDao!!
 
     @Before
     fun setUp() {
-        _itemDao = getInMemoryDb(InstrumentationRegistry.getInstrumentation().context).itemDao()
-        _itemRepository =
-            CachedItemsRepository(
+        _imageItemDao = getInMemoryDb(InstrumentationRegistry.getInstrumentation().context).imageItemDao()
+        _imageItemRepository =
+            CachedImageItemsRepository(
                 mockItemService,
-                itemDao
+                imageItemDao
             )
     }
 
     @Test
     fun testConnection() {
-        itemDao.insertAll(dummyItems)
+        imageItemDao.insertAll(dummyItems)
         val latch = CountDownLatch(1)
-        val itemsCatcher = mutableListOf<Item>()
+        val itemsCatcher = mutableListOf<ImageItem>()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             itemRepository.connect().observeForever {
                 it?.let {
@@ -68,7 +68,7 @@ class CachedItemRepositoryInstrTest {
     @Test
     fun testUpdates() {
         val latch = CountDownLatch(1)
-        val itemsCatcher = mutableListOf<Item>()
+        val itemsCatcher = mutableListOf<ImageItem>()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             itemRepository.connect().observeForever {
                 it?.let {
@@ -77,7 +77,7 @@ class CachedItemRepositoryInstrTest {
                 latch.countDown()
             }
         }
-        itemDao.insertAll(dummyItems)
+        imageItemDao.insertAll(dummyItems)
 
         // We don't want this test to hang forever in case of failure so give it a time limit
         latch.await(2, TimeUnit.SECONDS)
@@ -95,16 +95,16 @@ class CachedItemRepositoryInstrTest {
     @Test
     fun testFetchingOlderBatch() = runBlocking {
         every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
-        itemDao.insertAll(dummyItems)
+        imageItemDao.insertAll(dummyItems)
         itemRepository.fetchOlderItems()
-        verify { runBlocking { mockItemService.listItems(untilId = itemDao.getOldestId()) } }
+        verify { runBlocking { mockItemService.listItems(untilId = imageItemDao.getOldestId()) } }
     }
 
     @Test
     fun testFetchingNewerBatch() = runBlocking {
         every { runBlocking { mockItemService.listItems(any()) } } answers { emptyList() }
-        itemDao.insertAll(dummyItems)
+        imageItemDao.insertAll(dummyItems)
         itemRepository.fetchNewerItems()
-        verify { runBlocking { mockItemService.listItems(fromId = itemDao.getMostRecentId()) } }
+        verify { runBlocking { mockItemService.listItems(fromId = imageItemDao.getMostRecentId()) } }
     }
 }

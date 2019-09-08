@@ -1,8 +1,8 @@
 package com.magicbluepenguin.testapplication
 
-import com.magicbluepenguin.testapplication.data.cache.ItemDao
+import com.magicbluepenguin.testapplication.data.cache.ImageItemDao
 import com.magicbluepenguin.testapplication.data.network.ItemService
-import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedItemsRepository
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedImageItemsRepository
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
@@ -23,9 +23,9 @@ import retrofit2.HttpException
 import java.net.SocketException
 import javax.net.ssl.SSLException
 
-class CachedItemRepositoryTest {
+class CachedImageItemRepositoryTest {
 
-    val mockItemDao = mockk<ItemDao> {
+    val mockItemDao = mockk<ImageItemDao> {
         every { runBlocking { insertAll(any()) } } answers { Unit }
         every { runBlocking { deleteAllExcluding(any()) } } answers { 0 }
         every { runBlocking { getMostRecentId() } } answers { "" }
@@ -35,14 +35,14 @@ class CachedItemRepositoryTest {
         every { runBlocking { listItems(any(), any()) } }.answers { emptyList() }
     }
 
-    private var _itemRepository: CachedItemsRepository? = null
-    private val itemRepository: CachedItemsRepository
+    private var _itemRepository: CachedImageItemsRepository? = null
+    private val itemRepository: CachedImageItemsRepository
         get() = _itemRepository!!
 
     @Before
     fun setUp() {
         _itemRepository =
-            CachedItemsRepository(
+            CachedImageItemsRepository(
                 mockItemService,
                 mockItemDao
             )

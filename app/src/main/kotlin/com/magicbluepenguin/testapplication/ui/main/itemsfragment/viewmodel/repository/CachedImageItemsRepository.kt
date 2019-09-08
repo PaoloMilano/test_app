@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.magicbluepenguin.testapplication.data.cache.ItemDao
-import com.magicbluepenguin.testapplication.data.models.Item
+import com.magicbluepenguin.testapplication.data.cache.ImageItemDao
+import com.magicbluepenguin.testapplication.data.models.ImageItem
 import com.magicbluepenguin.testapplication.data.network.ItemService
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
@@ -17,16 +17,16 @@ import com.magicbluepenguin.testapplication.util.UnsecureConnectionError
 import java.net.SocketException
 import javax.net.ssl.SSLException
 
-class CachedItemsRepository(
+class CachedImageItemsRepository(
     val itemService: ItemService,
-    val itemDao: ItemDao,
+    val itemDao: ImageItemDao,
     val pageSize: Int = 10
-) : ItemsRepository {
+) : ImageItemsRepository {
     var repositoryStatelistener: ((RepositoryState) -> Unit)? = null
 
-    override fun connect(): LiveData<PagedList<Item>> {
-        val factory: DataSource.Factory<Int, Item> = itemDao.getAllItemsPaged()
-        return LivePagedListBuilder<Int, Item>(
+    override fun connect(): LiveData<PagedList<ImageItem>> {
+        val factory: DataSource.Factory<Int, ImageItem> = itemDao.getAllItemsPaged()
+        return LivePagedListBuilder<Int, ImageItem>(
             factory,
             pageSize
         ).build()
@@ -58,7 +58,7 @@ class CachedItemsRepository(
         repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(false))
     }
 
-    private suspend fun listItems(fromId: String? = null, untilId: String? = null): List<Item> {
+    private suspend fun listItems(fromId: String? = null, untilId: String? = null): List<ImageItem> {
         try {
             return itemService.listItems(fromId = fromId, untilId = untilId)
         } catch (ex: Exception) {

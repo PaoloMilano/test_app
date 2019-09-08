@@ -8,7 +8,7 @@
 
         <variable
             name="item"
-            type="com.magicbluepenguin.testapplication.data.models.Item" />
+            type="com.magicbluepenguin.testapplication.data.models.ImageItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
