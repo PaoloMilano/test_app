@@ -5,3 +5,5 @@ A few points about this app:
    - Showing refresh status is also something that would need to be redesigned. Current backend response times are oftern too short to fully display progress to the user. Lacking this visual cue, the user may be left unaware that anything happened.
 
    - I tried to provide tests for every area that contains non-trivial logic. I only completed the main assignment and skipped the optional functionality, chosing robustness over quantity.
+
+Also, please find the APK here: https://github.com/PaoloMilano/test_app/blob/master/test_app.apk
