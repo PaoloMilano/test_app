@@ -19,6 +19,9 @@ import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+/**
+ * A class to test the parts of the Cache repository that depend on DB implementation
+ */
 @RunWith(AndroidJUnit4::class)
 class CachedItemRepositoryInstrTest {
 

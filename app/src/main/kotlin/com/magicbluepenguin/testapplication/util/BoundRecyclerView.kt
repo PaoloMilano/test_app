@@ -20,17 +20,14 @@ fun <T : BoundPagedRecyclerViewAdapter.DifferentiableObject> bindList(
     view: BoundRecyclerView<T>,
     list: LiveData<PagedList<T>>?
 ) {
-    list?.observe(view.context as AppCompatActivity, object : Observer<PagedList<T>> {
-        override fun onChanged(t: PagedList<T>?) {
-            view.boundAdapter?.submitList(t)
-        }
-    })
+    list?.observe(view.context as AppCompatActivity,
+        Observer<PagedList<T>> { t -> view.boundAdapter?.submitList(t) })
 }
 
 @BindingAdapter("isFetchingFromTop")
 fun onFetchingFromTop(view: BoundRecyclerView<*>, isFetchingFromTop: LiveData<Boolean>) {
-    isFetchingFromTop.observe(view.context as AppCompatActivity, object : Observer<Boolean> {
-        override fun onChanged(t: Boolean?) {
+    isFetchingFromTop.observe(view.context as AppCompatActivity,
+        Observer<Boolean> { t ->
             view.boundAdapter?.run {
                 if (t != null && t != topProgressVisibility) {
                     topProgressVisibility = t
@@ -41,14 +38,13 @@ fun onFetchingFromTop(view: BoundRecyclerView<*>, isFetchingFromTop: LiveData<Bo
                     }
                 }
             }
-        }
-    })
+        })
 }
 
 @BindingAdapter("isFetchingFromBottom")
 fun onFetchingFromBottom(view: BoundRecyclerView<*>, isFetchingFromBottom: LiveData<Boolean>) {
-    isFetchingFromBottom.observe(view.context as AppCompatActivity, object : Observer<Boolean> {
-        override fun onChanged(t: Boolean?) {
+    isFetchingFromBottom.observe(view.context as AppCompatActivity,
+        Observer<Boolean> { t ->
             view.boundAdapter?.run {
                 if (t != null && t != bottomProgressVisibility) {
                     bottomProgressVisibility = t
@@ -59,8 +55,7 @@ fun onFetchingFromBottom(view: BoundRecyclerView<*>, isFetchingFromBottom: LiveD
                     }
                 }
             }
-        }
-    })
+        })
 }
 
 @BindingAdapter("onBottomReached")

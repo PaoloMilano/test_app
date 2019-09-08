@@ -7,13 +7,19 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.magicbluepenguin.testapp.bindings.BoundPagedRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.BR
+import com.magicbluepenguin.testapplication.R
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.databinding.ListItemBinding
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel
+import com.magicbluepenguin.testapplication.util.GenericNetworkError
+import com.magicbluepenguin.testapplication.util.NetworkError
+import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
 
 class MainFragment : Fragment() {
 
@@ -28,7 +34,7 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         return inflater.inflate(
-            com.magicbluepenguin.testapplication.R.layout.main_fragment,
+            R.layout.main_fragment,
             container,
             false
         )
@@ -42,14 +48,14 @@ class MainFragment : Fragment() {
 
                 val dataBinding = DataBindingUtil.setContentView<MainFragmentBinding>(
                     this,
-                    com.magicbluepenguin.testapplication.R.layout.main_fragment
+                    R.layout.main_fragment
                 ).apply {
                     lifecycleOwner = viewLifecycleOwner
                     itemsListView.boundAdapter = CustomerRecyclerViewAdapter()
                 }
 
-                ItemsViewModel.getInstanceWithCahedRepository(
-                    activity as AppCompatActivity,
+                val viewModel = ItemsViewModel.getInstanceWithCahedRepository(
+                    this,
                     "463154134a6642d51c714d685ec0efcb"
                 ).apply {
                     onDataStreamReadyListener {
@@ -57,6 +63,22 @@ class MainFragment : Fragment() {
                     }
                     dataBinding.itemsViewModel = this
                 }
+
+                viewModel.networkError.observe(viewLifecycleOwner,
+                    Observer<NetworkError> { error ->
+                        (activity?.findViewById(android.R.id.content) as View).run {
+                            val errorStringRes = when (error!!) {
+                                is GenericNetworkError -> R.string.generic_network_error
+                                is NetworkUnavailableError -> R.string.network_unavailable_error
+                            }
+
+                            Snackbar.make(
+                                this,
+                                errorStringRes,
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                    })
             }
         }
     }
@@ -95,7 +117,7 @@ class MainFragment : Fragment() {
             if (viewType == VIEW_TYPE_PROGRESS_BAR) {
                 return object : RecyclerView.ViewHolder(
                     LayoutInflater.from(parent.context).inflate(
-                        com.magicbluepenguin.testapplication.R.layout.refresh_list_item,
+                        R.layout.refresh_list_item,
                         parent,
                         false
                     )
@@ -104,7 +126,7 @@ class MainFragment : Fragment() {
             return ItemViewHolder(
                 DataBindingUtil.inflate(
                     LayoutInflater.from(parent.context),
-                    com.magicbluepenguin.testapplication.R.layout.list_item,
+                    R.layout.list_item,
                     parent,
                     false
                 )

@@ -30,6 +30,7 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
     val isFetchingMoreRecentItems = MutableLiveData<Boolean>()
     val isFetchingMoreOlderItems = MutableLiveData<Boolean>()
     val isRefreshing = MutableLiveData<Boolean>()
+    val networkError = MutableLiveData<NetworkError>()
 
     private var onLiveDataReadyListener: ((LiveData<PagedList<Item>>) -> Unit)? = null
 
@@ -40,12 +41,16 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
 
                 // Use return value to force `when` statement to be exhaustive
                 val ignore = when (repositoryState) {
-                    is IsFetchingMoreOlderItems -> isFetchingMoreOlderItems.postValue(repositoryState.value)
-                    is IsFetchingMoreRecentItems -> isFetchingMoreRecentItems.postValue(repositoryState.value)
+                    is IsFetchingMoreOlderItems -> isFetchingMoreOlderItems.postValue(
+                        repositoryState.value
+                    )
+                    is IsFetchingMoreRecentItems -> isFetchingMoreRecentItems.postValue(
+                        repositoryState.value
+                    )
                     is RefreshInProgress -> {
                         isRefreshing.postValue(repositoryState.value)
                     }
-                    NetworkError -> TODO()
+                    is NetworkError -> networkError.postValue(repositoryState)
                 }
             }
         }

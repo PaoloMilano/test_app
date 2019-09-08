@@ -7,10 +7,13 @@ import androidx.paging.PagedList
 import com.magicbluepenguin.testapplication.data.cache.ItemDao
 import com.magicbluepenguin.testapplication.data.models.Item
 import com.magicbluepenguin.testapplication.data.network.ItemService
+import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreOlderItems
 import com.magicbluepenguin.testapplication.util.IsFetchingMoreRecentItems
+import com.magicbluepenguin.testapplication.util.NetworkUnavailableError
 import com.magicbluepenguin.testapplication.util.RefreshInProgress
 import com.magicbluepenguin.testapplication.util.RepositoryState
+import java.net.SocketException
 
 class CachedItemsRepository(
     val itemService: ItemService,
@@ -30,7 +33,7 @@ class CachedItemsRepository(
     override suspend fun refresh() {
         repositoryStatelistener?.invoke(RefreshInProgress(true))
 
-        val freshItems = itemService.listItems()
+        val freshItems = listItems()
 
         if (!freshItems.isEmpty()) {
             itemDao.insertAll(freshItems)
@@ -43,14 +46,26 @@ class CachedItemsRepository(
 
     override suspend fun fetchOlderItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(true))
-        itemDao.insertAll(itemService.listItems(untilId = itemDao.getOldestId()))
+        itemDao.insertAll(listItems(untilId = itemDao.getOldestId()))
         repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(false))
     }
 
     override suspend fun fetchNewerItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(true))
-        itemDao.insertAll(itemService.listItems(fromId = itemDao.getMostRecentId()))
+        itemDao.insertAll(listItems(fromId = itemDao.getMostRecentId()))
         repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(false))
+    }
+
+    private suspend fun listItems(fromId: String? = null, untilId: String? = null): List<Item> {
+        try {
+            return itemService.listItems(fromId = fromId, untilId = untilId)
+        } catch (ex: Exception) {
+            when (ex) {
+                is SocketException -> repositoryStatelistener?.invoke(NetworkUnavailableError)
+                else -> repositoryStatelistener?.invoke(GenericNetworkError)
+            }
+        }
+        return emptyList()
     }
 
     override fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit) {
