@@ -7,15 +7,16 @@ import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitServiceProvider(val authHeader: String) {
+class RetrofitServiceProvider(val authHeader: String, val certPin: String) {
 
     private val retrofit by lazy {
         val certPinner = CertificatePinner.Builder()
             .add(
                 "marlove.net",
-                "sha256/rCCCPxtKvFVDrKOPDSfirp4bQOYw4mIVKn8fZxgQcs4="
+                certPin
             )
             .build()
+
         val defaultHttpClient = OkHttpClient.Builder()
             .addInterceptor(object : Interceptor {
 

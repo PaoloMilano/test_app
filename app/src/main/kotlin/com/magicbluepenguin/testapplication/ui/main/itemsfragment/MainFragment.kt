@@ -10,14 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.magicbluepenguin.testapp.bindings.BoundPagedRecyclerViewAdapter
-import com.magicbluepenguin.testapplication.BR
 import com.magicbluepenguin.testapplication.R
-import com.magicbluepenguin.testapplication.data.models.Item
-import com.magicbluepenguin.testapplication.databinding.ListItemBinding
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
+import com.magicbluepenguin.testapplication.ui.main.itemsfragment.Adapter.CustomerRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ItemsViewModel
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
 import com.magicbluepenguin.testapplication.util.NetworkError
@@ -59,7 +55,8 @@ class MainFragment : Fragment() {
 
                 val viewModel = ItemsViewModel.getInstanceWithCahedRepository(
                     this,
-                    "463154134a6642d51c714d685ec0efcb"
+                    "463154134a6642d51c714d685ec0efcb",
+                    "sha256/rCCCPxtKvFVDrKOPDSfirp4bQOYw4mIVKn8fZxgQcs4="
                 ).apply {
                     onDataStreamReadyListener {
                         dataBinding.items = itemsLiveData
@@ -89,79 +86,8 @@ class MainFragment : Fragment() {
     }
 
     private fun showSnackBar(@StringRes stringRes: Int, duration: Int? = Snackbar.LENGTH_SHORT) {
-    }
-
-    class CustomerRecyclerViewAdapter() :
-        BoundPagedRecyclerViewAdapter<Item, RecyclerView.ViewHolder>() {
-
-        private val VIEW_TYPE_ITEM = 0
-        private val VIEW_TYPE_PROGRESS_BAR = 1
-
-        override fun getItemCount(): Int {
-            var itemCount = super.getItemCount()
-            if (topProgressVisibility) {
-                itemCount += 1
-            }
-            if (bottomProgressVisibility) {
-                itemCount += 1
-            }
-            return itemCount
-        }
-
-        override fun getItemViewType(position: Int): Int {
-            if (topProgressVisibility && position == 0) {
-                return VIEW_TYPE_PROGRESS_BAR
-            }
-            if (bottomProgressVisibility && position == itemCount - 1) {
-                return VIEW_TYPE_PROGRESS_BAR
-            }
-            return VIEW_TYPE_ITEM
-        }
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
-        ): RecyclerView.ViewHolder {
-            if (viewType == VIEW_TYPE_PROGRESS_BAR) {
-                return object : RecyclerView.ViewHolder(
-                    LayoutInflater.from(parent.context).inflate(
-                        R.layout.refresh_list_item,
-                        parent,
-                        false
-                    )
-                ) {}
-            }
-            return ItemViewHolder(
-                DataBindingUtil.inflate(
-                    LayoutInflater.from(parent.context),
-                    R.layout.list_item,
-                    parent,
-                    false
-                )
-            )
-        }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            when (holder) {
-                is ItemViewHolder -> {
-                    val adjustedPosition = if (topProgressVisibility) {
-                        position - 1
-                    } else {
-                        position
-                    }
-                    getItem(adjustedPosition)?.let {
-                        holder.bind(it)
-                    }
-                }
-            }
-        }
-    }
-
-    class ItemViewHolder(val binding: ListItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Item) {
-            binding.item = item
-            binding.notifyPropertyChanged(BR._all)
+        activity?.findViewById<View>(android.R.id.content)?.run {
+            Snackbar.make(this, stringRes, duration!!).show()
         }
     }
 }

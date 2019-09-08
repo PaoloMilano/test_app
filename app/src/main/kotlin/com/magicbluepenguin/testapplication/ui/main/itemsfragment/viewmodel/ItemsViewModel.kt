@@ -99,7 +99,8 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
         // single place that is easy to find and debug
         fun getInstanceWithCahedRepository(
             activityContext: AppCompatActivity,
-            authHeader: String
+            authHeader: String,
+            certPin: String
         ): ItemsViewModel {
             return ViewModelProvider(activityContext,
                 object : ViewModelProvider.Factory {
@@ -118,7 +119,7 @@ class ItemsViewModel(val itemsRepository: ItemsRepository) : ViewModel() {
 
                         val itemsRepository =
                             CachedItemsRepository(
-                                RetrofitServiceProvider(authHeader).itemService,
+                                RetrofitServiceProvider(authHeader, certPin).itemService,
                                 db.itemDao()
                             )
                         return ItemsViewModel(itemsRepository) as T
