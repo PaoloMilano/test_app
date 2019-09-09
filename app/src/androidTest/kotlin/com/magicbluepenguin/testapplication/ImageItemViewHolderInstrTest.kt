@@ -11,7 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verifySequence
-import kotlinx.android.synthetic.main.list_item.view.imageView
+import kotlinx.android.synthetic.main.image_list_item.view.imageView
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

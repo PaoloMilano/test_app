@@ -12,9 +12,9 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.recyclerview.widget.RecyclerView
 import com.magicbluepenguin.testapp.bindings.BoundPagedRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.data.models.ImageItem
-import com.magicbluepenguin.testapplication.databinding.ListItemBinding
+import com.magicbluepenguin.testapplication.databinding.ImageListItemBinding
 import com.magicbluepenguin.testapplication.util.toBitMap
-import kotlinx.android.synthetic.main.list_item.view.imageView
+import kotlinx.android.synthetic.main.image_list_item.view.imageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ class ImageItemsRecyclerViewAdapter() :
     override fun getViewHolder(parent: ViewGroup, viewType: Int) = ImageItemViewHolder(
         DataBindingUtil.inflate(
             LayoutInflater.from(parent.context),
-            com.magicbluepenguin.testapplication.R.layout.list_item,
+            com.magicbluepenguin.testapplication.R.layout.image_list_item,
             parent,
             false
         )
@@ -55,7 +55,7 @@ class ImageItemsRecyclerViewAdapter() :
         }
     }
 
-    class ImageItemViewHolder(val binding: ListItemBinding) :
+    class ImageItemViewHolder(val binding: ImageListItemBinding) :
         RecyclerView.ViewHolder(binding.root), CoroutineScope, View.OnAttachStateChangeListener {
 
         private val supervisor = SupervisorJob()

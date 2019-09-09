@@ -51,7 +51,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:scrollbars="vertical"
-                tools:listitem="@layout/list_item" />
+                tools:listitem="@layout/image_list_item" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

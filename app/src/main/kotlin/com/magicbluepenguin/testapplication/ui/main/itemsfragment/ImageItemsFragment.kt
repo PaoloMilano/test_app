@@ -13,7 +13,7 @@ import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.magicbluepenguin.testapplication.R
 import com.magicbluepenguin.testapplication.TestApplication
-import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
+import com.magicbluepenguin.testapplication.databinding.ImageListItemFragmentBinding
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.Adapter.ImageItemsRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ImageItemsViewModel
 import com.magicbluepenguin.testapplication.util.GenericNetworkError
@@ -34,7 +34,7 @@ class ImageItemsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         return inflater.inflate(
-            R.layout.main_fragment,
+            R.layout.image_list_item_fragment,
             container,
             false
         )
@@ -46,9 +46,9 @@ class ImageItemsFragment : Fragment() {
         with(activity as? AppCompatActivity) {
             this?.let {
 
-                val dataBinding = DataBindingUtil.setContentView<MainFragmentBinding>(
+                val dataBinding = DataBindingUtil.setContentView<ImageListItemFragmentBinding>(
                     this,
-                    R.layout.main_fragment
+                    R.layout.image_list_item_fragment
                 ).apply {
                     lifecycleOwner = viewLifecycleOwner
                     itemsListView.boundAdapter = ImageItemsRecyclerViewAdapter()
