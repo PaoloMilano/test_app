@@ -7,12 +7,13 @@ import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.Imag
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.ImageItemsRepository
 import com.magicbluepenguin.testapplication.util.RepositoryState
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verifyOrder
+import io.mockk.verifySequence
+import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
@@ -43,20 +44,24 @@ class ImageItemsViewModelTest {
     @Test
     fun `test initialisation`() {
         ImageItemsViewModel(spyItemsRepository)
-
-        runBlocking {
-            launch(Dispatchers.Main) {
-
-                val listener = spyItemsRepository.listener
-                verifyOrder {
-                    spyItemsRepository.setOnRepositoryStateListener(listener)
-                    runBlocking { spyItemsRepository.refresh() }
-                }
-            }
+        val listenerSlot = slot<(RepositoryState) -> Unit>()
+        verifySequence {
+            spyItemsRepository.setOnRepositoryStateListener(capture(listenerSlot))
         }
+        assertEquals(listenerSlot.captured, spyItemsRepository.listener)
+    }
+
+    @Test
+    fun `test datasource connection`() = runBlocking {
+        var dataSource: LiveData<PagedList<ImageItem>>? = null
+        ImageItemsViewModel(spyItemsRepository)
+            .connectToDataStream { dataSource = it }.join()
+        assertEquals(spyItemsRepository.mockDataSource, dataSource)
     }
 
     class TestItemsRepository : ImageItemsRepository {
+
+        val mockDataSource = mockk<LiveData<PagedList<ImageItem>>>()
 
         override suspend fun fetchNewerItems() {
         }
@@ -66,7 +71,7 @@ class ImageItemsViewModelTest {
             get() = _listener!!
 
         override fun connect(): LiveData<PagedList<ImageItem>> {
-            return mockk()
+            return mockDataSource
         }
 
         override fun setOnRepositoryStateListener(listener: (RepositoryState) -> Unit) {

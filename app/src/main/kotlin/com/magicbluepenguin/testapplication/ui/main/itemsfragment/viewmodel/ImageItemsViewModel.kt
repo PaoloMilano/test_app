@@ -1,17 +1,13 @@
 package com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel
 
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
-import androidx.room.Room
-import com.magicbluepenguin.testapplication.data.cache.AppDatabase
+import com.magicbluepenguin.testapplication.data.cache.ImageItemDao
 import com.magicbluepenguin.testapplication.data.models.ImageItem
 import com.magicbluepenguin.testapplication.data.network.RetrofitServiceProvider
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.repository.CachedImageItemsRepository
@@ -26,13 +22,10 @@ import kotlinx.coroutines.withContext
 
 class ImageItemsViewModel(val itemsRepository: ImageItemsRepository) : ViewModel() {
 
-    var imageItemsLiveData: LiveData<PagedList<ImageItem>>? = null
     val isFetchingMoreRecentItems = MutableLiveData<Boolean>()
     val isFetchingMoreOlderItems = MutableLiveData<Boolean>()
     val isRefreshing = MutableLiveData<Boolean>()
     val networkError = MutableLiveData<NetworkError>()
-
-    private var onLiveDataReadyListener: ((LiveData<PagedList<ImageItem>>) -> Unit)? = null
 
     init {
         // Start by listening for state changes
@@ -54,9 +47,6 @@ class ImageItemsViewModel(val itemsRepository: ImageItemsRepository) : ViewModel
                 }
             }
         }
-
-        // Then ask for fresh data
-        refresh()
     }
 
     fun fetchOlderItems() = viewModelScope.launch {
@@ -75,23 +65,13 @@ class ImageItemsViewModel(val itemsRepository: ImageItemsRepository) : ViewModel
         withContext(Dispatchers.Default) {
             itemsRepository.refresh()
         }
+    }
 
-        if (imageItemsLiveData == null) {
-
-            // Connect to the stream after refreshing so we show fresh latest available data
-            itemsRepository.connect().let {
-                imageItemsLiveData = it
-                if (onLiveDataReadyListener != null) {
-                    onLiveDataReadyListener?.invoke(it)
-                }
-            }
+    fun connectToDataStream(listener: (LiveData<PagedList<ImageItem>>) -> Unit) =
+        viewModelScope.launch {
+            refresh()
+            listener.invoke(itemsRepository.connect())
         }
-    }
-
-    fun onDataStreamReadyListener(listener: (LiveData<PagedList<ImageItem>>) -> Unit) {
-        onLiveDataReadyListener = listener
-        imageItemsLiveData?.let(listener)
-    }
 
     companion object {
 
@@ -99,28 +79,17 @@ class ImageItemsViewModel(val itemsRepository: ImageItemsRepository) : ViewModel
         // single place that is easy to find and debug
         fun getInstanceWithCahedRepository(
             activityContext: AppCompatActivity,
+            imageItemDao: ImageItemDao,
             authHeader: String,
             certPin: String
         ): ImageItemsViewModel {
             return ViewModelProvider(activityContext,
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                        val db = Room.databaseBuilder(
-                            activityContext,
-                            AppDatabase::class.java, "app_database"
-                        ).build()
-
-                        activityContext.lifecycle.addObserver(object : LifecycleObserver {
-                            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-                            fun onDestroy() {
-                                db.close()
-                            }
-                        })
-
                         val itemsRepository =
                             CachedImageItemsRepository(
                                 RetrofitServiceProvider(authHeader, certPin).itemService,
-                                db.imageItemDao()
+                                imageItemDao
                             )
                         return ImageItemsViewModel(itemsRepository) as T
                     }

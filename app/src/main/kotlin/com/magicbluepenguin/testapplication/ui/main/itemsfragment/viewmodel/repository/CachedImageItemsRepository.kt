@@ -48,17 +48,22 @@ class CachedImageItemsRepository(
 
     override suspend fun fetchOlderItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(true))
-        itemDao.insertAll(listItems(untilId = itemDao.getOldestId()))
+        val items = listItems(untilId = itemDao.getOldestId())
         repositoryStatelistener?.invoke(IsFetchingMoreOlderItems(false))
+        itemDao.insertAll(items)
     }
 
     override suspend fun fetchNewerItems() {
         repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(true))
-        itemDao.insertAll(listItems(fromId = itemDao.getMostRecentId()))
+        val items = listItems(fromId = itemDao.getMostRecentId())
         repositoryStatelistener?.invoke(IsFetchingMoreRecentItems(false))
+        itemDao.insertAll(items)
     }
 
-    private suspend fun listItems(fromId: String? = null, untilId: String? = null): List<ImageItem> {
+    private suspend fun listItems(
+        fromId: String? = null,
+        untilId: String? = null
+    ): List<ImageItem> {
         try {
             return itemService.listItems(fromId = fromId, untilId = untilId)
         } catch (ex: Exception) {

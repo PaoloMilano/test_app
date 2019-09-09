@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
 import com.magicbluepenguin.testapplication.R
+import com.magicbluepenguin.testapplication.TestApplication
 import com.magicbluepenguin.testapplication.databinding.MainFragmentBinding
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.Adapter.ImageItemsRecyclerViewAdapter
 import com.magicbluepenguin.testapplication.ui.main.itemsfragment.viewmodel.ImageItemsViewModel
@@ -53,18 +54,20 @@ class ImageItemsFragment : Fragment() {
                     itemsListView.boundAdapter = ImageItemsRecyclerViewAdapter()
                 }
 
-                val viewModel = ImageItemsViewModel.getInstanceWithCahedRepository(
+                val appDatabase = (application as? TestApplication)?.run { appDatabase }
+                    ?: throw IllegalStateException("AppDatabase is not available")
+
+                ImageItemsViewModel.getInstanceWithCahedRepository(
                     this,
+                    appDatabase.imageItemDao(),
                     "463154134a6642d51c714d685ec0efcb",
                     "sha256/rCCCPxtKvFVDrKOPDSfirp4bQOYw4mIVKn8fZxgQcs4="
                 ).apply {
-                    onDataStreamReadyListener {
-                        dataBinding.imageItems = imageItemsLiveData
+                    connectToDataStream {
+                        dataBinding.imageItems = it
                     }
                     dataBinding.itemsViewModel = this
-                }
-
-                viewModel.networkError.observe(viewLifecycleOwner,
+                }.networkError.observe(viewLifecycleOwner,
                     Observer<NetworkError> { error ->
                         (activity?.findViewById(android.R.id.content) as View).run {
                             val activityContext = this.context
